@@ -9,7 +9,7 @@
 class wserver : public QObject {
   Q_OBJECT
   QWebSocketServer *m_pWebSocketServer = nullptr;
-  quint16 port = 3000;
+  quint16 m_port = 3000;
   QList<QWebSocket *> m_clients;
 
 public:
