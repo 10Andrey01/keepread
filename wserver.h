@@ -12,7 +12,7 @@ class wserver : public QObject {
   Q_OBJECT
   QWebSocketServer *m_pWebSocketServer = nullptr;
   quint16 m_port = 3000;
-  enum class m_ConnectionSate
+  enum class m_connectionSate
   {
     PendingAuthentication,
     Authenticated,
@@ -27,7 +27,7 @@ class wserver : public QObject {
     QDateTime connectionTime;
     QDateTime lastMessaging;
     QTimer *authTimer = nullptr;
-    m_ConnectionSate state = m_ConnectionSate::Failed;
+    m_connectionSate state = m_connectionSate::Failed;
   };
   QList<m_client *> m_clients;
   void sendAuthenticationResult (QWebSocket *socket, bool succes,
