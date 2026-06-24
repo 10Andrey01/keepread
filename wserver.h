@@ -48,6 +48,7 @@ public slots:
   void socketDisconected ();
 signals:
   void authentication (const QString userName, const QString userPassword);
+  void authenticationFailed (const QString message);
   void closed();
 };
 

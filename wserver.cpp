@@ -14,6 +14,7 @@ wserver::wserver (quint16 port, QObject *parent)
       qFatal () << "ERROR: WebSocket server Keepread not started";
       return;
     }
+  m_clients << new m_client ();
   qInfo () << "INFO: WebSocker server Keepread started on " << m_port
            << " port";
   connect (m_pWebSocketServer, &QWebSocketServer::newConnection, this,
@@ -25,15 +26,33 @@ wserver::wserver (quint16 port, QObject *parent)
 void
 wserver::onNewConnection ()
 {
-  QWebSocket *pNewConnection = m_pWebSocketServer->maxPendingConnections ();
+  m_client *client = new m_client ();
+  client->socket = m_pWebSocketServer->maxPendingConnections ();
+  client->userId = m_clients.last ()->userId + 1;
+  client->state = m_connectionSate::PendingAuthentication;
 
-  connect (pNewConnection, &QWebSocket::textMessageReceived, this,
+  client->authTimer = new QTimer (client);
+  client->authTimer->setSingleShot (true);
+  client->authTimer->setInterval (3000);
+  connect (client->authTimer, &QTimer::timeout, this, [this, client] () {
+    if (client->state == ConnectionState::PendingAuth)
+      {
+        sendAuthenticationResult (client->socket, false,
+                                  "Authentication timeout");
+        client->socket->close ();
+        m_clients.removeAll (client);
+        delete client;
+        emit authenticationFailed ("Authentication timeout");
+      }
+  });
+  client->authTimer->start ();
+  connect (client->socket, &QWebSocket::textMessageReceived, this,
            &wserver::processTextMessage);
-  connect (pNewConnection, &QWebSocket::binaryMessageReceived, this,
+  connect (client->socket, &QWebSocket::binaryMessageReceived, this,
            &wserver::processBinaryMessage);
-  connect (pNewConnection, &QWebSocket::disconnected, this,
+  connect (client->socket, &QWebSocket::disconnected, this,
            &wserver::socketDisconected);
-  m_clients << pNewConnection;
+  m_clients << client;
 }
 
 void
