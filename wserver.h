@@ -27,6 +27,7 @@ class wserver : public QObject {
     QDateTime connectionTime;
     QDateTime lastMessaging;
     QTimer *authTimer = nullptr;
+    m_ConnectionSate state = m_ConnectionSate::Failed;
   };
   QList<m_client *> m_clients;
   void sendAuthenticationResult (QWebSocket *socket, bool succes,
